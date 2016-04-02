@@ -1,0 +1,23 @@
+package com.nicholasgot.project1;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
+
+public class SettingsActivity extends Activity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // display the fragment as the main content
+        getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, new SettingsActivityFragment())
+                .commit();
+    }
+
+}
