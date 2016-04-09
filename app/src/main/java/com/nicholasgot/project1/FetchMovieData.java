@@ -49,7 +49,7 @@ public class FetchMovieData extends AsyncTask<String, Void, ArrayList<String>> {
                     .appendPath("3")
                     .appendPath("movie")
                     .appendPath(sortOrder)
-                    .appendQueryParameter(API_KEY, "f02800d89481918a2f7b70b9375ed8ad");
+                    .appendQueryParameter(API_KEY, "API KEY");
 
             String myUrl = builder.build().toString();
 
