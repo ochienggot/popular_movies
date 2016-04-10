@@ -11,8 +11,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -44,7 +52,7 @@ public class MoviesFragment extends Fragment {
         String prefSortOrder = sharedPref.getString(SORT_ORDER, "");
 
         FetchMovieData fetchTask = new FetchMovieData(mThumbIds, mIds, mMoviesAdapter);
-        fetchTask.execute(prefSortOrder);
+        fetchTask.doInBackground(prefSortOrder);
     }
 
     @Override
@@ -69,4 +77,5 @@ public class MoviesFragment extends Fragment {
 
         return rootView;
     }
+
 }

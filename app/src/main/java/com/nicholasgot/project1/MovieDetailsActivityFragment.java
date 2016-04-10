@@ -3,6 +3,7 @@ package com.nicholasgot.project1;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 public class MovieDetailsActivityFragment extends Fragment {
     private final String LOG_TAG = MovieDetailsActivity.class.getSimpleName();
     private TextView mTextView;
+    public static Handler UIHandler;
 
     public MovieDetailsActivityFragment() {
     }
@@ -50,7 +52,7 @@ public class MovieDetailsActivityFragment extends Fragment {
 
             // Request for details of movie with this id
             FetchMovieDetails fetchMovieDetails = new FetchMovieDetails(getContext(), mTextView, getActivity());
-            fetchMovieDetails.execute(movieId);
+            fetchMovieDetails.doInBackground(movieId);
         }
 
         return rootView;

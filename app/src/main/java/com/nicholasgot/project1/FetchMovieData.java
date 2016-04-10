@@ -1,112 +1,86 @@
 package com.nicholasgot.project1;
 
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by ngot on 09/04/2016.
  */
-public class FetchMovieData extends AsyncTask<String, Void, ArrayList<String>> {
+public class FetchMovieData {
     private final static String LOG_TAG = FetchMovieData.class.getSimpleName();
     private ArrayList<String> mThumbIds;
     private HashMap<String, String> mIds;
     private ImageAdapter mMoviesAdapter;
+    ArrayList<String> mResultList;
 
     public FetchMovieData(ArrayList<String> mThumbIds, HashMap<String, String> mIds, ImageAdapter imageAdapter) {
         this.mThumbIds = mThumbIds;
         this.mIds = mIds;
         this.mMoviesAdapter = imageAdapter;
+        mResultList = new ArrayList<>();
     }
 
-    @Override
-    protected ArrayList<String> doInBackground(String... params) {
-        HttpURLConnection httpURLConnection = null;
-        BufferedReader bufferedReader = null;
-        String jsonStr;
-
+    protected void doInBackground(String... params) {
         String API_KEY = "api_key";
         String sortOrder = params[0];
 
-        try {
-            Uri.Builder builder = new Uri.Builder();
-            builder.scheme("https")
-                    .authority("api.themoviedb.org")
-                    .appendPath("3")
-                    .appendPath("movie")
-                    .appendPath(sortOrder)
-                    .appendQueryParameter(API_KEY, "f02800d89481918a2f7b70b9375ed8ad");
+        OkHttpClient client = new OkHttpClient();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://api.themoviedb.org").newBuilder();
+        urlBuilder.addPathSegment("3");
+        urlBuilder.addPathSegment("movie");
+        urlBuilder.addPathSegment(sortOrder);
+        urlBuilder.addQueryParameter(API_KEY, "f02800d89481918a2f7b70b9375ed8ad");
+        String okUrl = urlBuilder.build().toString();
 
-            String myUrl = builder.build().toString();
+        Log.v(LOG_TAG, "URL: " + okUrl);
 
-            URL url = new URL(myUrl);
-
-            httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod("GET");
-            httpURLConnection.connect();
-
-            // Read response into a buffer
-            InputStream inputStream = httpURLConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-
-            if (inputStream == null) {
-                return null;
+        Request request = new Request.Builder()
+                .url(okUrl)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
             }
 
-            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            String line = bufferedReader.readLine();
-            while (line != null) {
-                buffer.append(line + "\n");
-                line = bufferedReader.readLine();
-            }
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) {
+                    throw new IOException("Unexpected code " + response);
+                }
 
-            jsonStr = buffer.toString();
-            return getMovieDataFromJson(jsonStr);
-
-        } catch (MalformedURLException m) {
-            Log.e(LOG_TAG, "Malformed URL: " + m);
-            return null;
-
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "IO error: " + e);
-            return null;
-
-        } catch (JSONException je) {
-            Log.e(LOG_TAG, "Json parsing error: " + je);
-            return null;
-
-        } finally {
-            if (httpURLConnection != null) {
-                httpURLConnection.disconnect();
-            }
-
-            if (bufferedReader != null) {
                 try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "Error closing buffer: " + e);
+                    String responseData = response.body().string();
+                    getMovieDataFromJson(responseData);
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            onPostExecute(mResultList);
+                        }
+                    });
+                } catch (JSONException je) {
+                    Log.v(LOG_TAG, "Json parsing error " + je);
                 }
             }
-        }
+        });
     }
 
-    @Override
     protected void onPostExecute(ArrayList<String> details) {
-        super.onPostExecute(details);
         processMovieDetails(details);
     }
 
@@ -131,12 +105,10 @@ public class FetchMovieData extends AsyncTask<String, Void, ArrayList<String>> {
         mMoviesAdapter.notifyDataSetChanged();
     }
 
-    private ArrayList<String> getMovieDataFromJson(String jsonStr) throws JSONException {
+    private void getMovieDataFromJson(String jsonStr) throws JSONException {
         final String RESULTS = "results";
         final String POSTER_PATH = "poster_path";
         final String ID = "id";
-
-        ArrayList<String> resultList = new ArrayList<>();
 
         JSONObject moviesJson = new JSONObject(jsonStr);
         JSONArray movieArray = moviesJson.getJSONArray(RESULTS);
@@ -146,9 +118,8 @@ public class FetchMovieData extends AsyncTask<String, Void, ArrayList<String>> {
             String id = movieObject.getString(ID);
             String posterPath = movieObject.getString(POSTER_PATH);
 
-            resultList.add(id + ":" + posterPath);
+            mResultList.add(id + ":" + posterPath);
         }
-        return resultList;
     }
 }
 
