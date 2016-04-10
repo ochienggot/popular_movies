@@ -43,10 +43,8 @@ public class FetchMovieData {
         urlBuilder.addPathSegment("3");
         urlBuilder.addPathSegment("movie");
         urlBuilder.addPathSegment(sortOrder);
-        urlBuilder.addQueryParameter(API_KEY, "f02800d89481918a2f7b70b9375ed8ad");
+        urlBuilder.addQueryParameter(API_KEY, "API KEY");
         String okUrl = urlBuilder.build().toString();
-
-        Log.v(LOG_TAG, "URL: " + okUrl);
 
         Request request = new Request.Builder()
                 .url(okUrl)
