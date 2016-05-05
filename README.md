@@ -1,6 +1,7 @@
 # popular_movies
-This one of the apps I'm building in my quest to lean Android development
-What I have learnt so far:
-+ Background networking (using AsyncTask, OkHttp) TODO: retrofit and RxAndroid
+App for popular movies
+Done:
++ Background networking (using AsyncTask, OkHttp) 
 + Hooking up application to the cloud via APIs
 + Preference/settings management
+TODO: retrofit and RxAndroid
